@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
-import { getClueUUID } from './api';
+import { getClueById, getPuzzle } from './api';
 
 const CurrentClue = ({
   setClueUUID,
   authToken,
+  setExistsSideQuest,
+  setGuessesLeft,
 }: {
   authToken: string;
   setClueUUID: React.Dispatch<React.SetStateAction<string>>;
+  setExistsSideQuest: React.Dispatch<React.SetStateAction<boolean>>;
+  setGuessesLeft: React.Dispatch<React.SetStateAction<number>>;
 }) => {
   const [currentClue, setCurrentClue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -15,8 +19,13 @@ const CurrentClue = ({
   const getClue = async (currentClue: number) => {
     setIsLoading(true);
     setIsErrored(false);
+    setExistsSideQuest(false);
     try {
-      const UUID = await getClueUUID(currentClue, authToken);
+      const puzzle = await getPuzzle(authToken);
+      const clue = await getClueById(puzzle, currentClue);
+      setGuessesLeft(clue.guesses_remaining_today);
+      const UUID = clue.uuid;
+      if (clue.checkpoint) setExistsSideQuest(true);
       setClueUUID(UUID);
     } catch (err) {
       console.log(err);

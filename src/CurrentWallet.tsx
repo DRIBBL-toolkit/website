@@ -26,9 +26,13 @@ const generateAuthToken = async (wallet: Wallet) => {
 };
 
 const CurrentWallet = ({
+  guessesLeft,
   setAuthToken,
+  setGuessesLeft,
 }: {
+  guessesLeft: number;
   setAuthToken: React.Dispatch<React.SetStateAction<string>>;
+  setGuessesLeft: React.Dispatch<React.SetStateAction<number>>;
 }) => {
   const [currentWallet, setCurrentWallet] = useState<Wallet>();
   const [isLoading, setIsLoading] = useState(false);
@@ -40,6 +44,7 @@ const CurrentWallet = ({
     setIsLoading(true);
     const wallet = genereWallet();
     const authToken = await generateAuthToken(wallet);
+    setGuessesLeft(3);
     setCurrentWallet(wallet);
     setAuthToken(authToken);
     setIsLoading(false);
@@ -80,7 +85,9 @@ const CurrentWallet = ({
         <h5 className="mb-1 text-xl font-medium text-gray-900 dark:text-white">
           Guesses Remaining
         </h5>
-        <span className="text-sm text-gray-500 dark:text-gray-400">3</span>
+        <span className="text-sm text-gray-500 dark:text-gray-400">
+          {guessesLeft}
+        </span>
         <button
           className="flex h-10 mt-6 space-x-3 items-center py-2 px-4 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 "
           onClick={createWallet}

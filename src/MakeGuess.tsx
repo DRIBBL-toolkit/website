@@ -1,12 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { checkGuess } from './api';
+import { checkGuess, checkSideQuest } from './api';
 
 const MakeGuess = ({
   clueUUID,
   authToken,
+  type,
+  existsSideQuest,
+  isSideQuestSolved,
+  setIsSideQuestSolved,
+  setGuessesLeft,
 }: {
   clueUUID: string;
   authToken: string;
+  type: 'Side Quest' | 'Main Quest';
+  isSideQuestSolved: boolean;
+  existsSideQuest: boolean;
+  setIsSideQuestSolved: React.Dispatch<React.SetStateAction<boolean>>;
+  setGuessesLeft: React.Dispatch<React.SetStateAction<number>>;
 }) => {
   const [currentGuess, setCurrentGuess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -19,22 +29,48 @@ const MakeGuess = ({
   const makeGuess = async () => {
     if (!currentGuess) return;
     setIsLoading(true);
-    const isCorrect = await checkGuess(
-      authToken,
-      'red',
-      clueUUID,
-      currentGuess
-    );
-    if (isCorrect) setIsCorrectGuess(true);
-    else setIsCorrectGuess(false);
+
+    if (type === 'Main Quest') {
+      const { correct, guessesLeft } = await checkGuess(
+        authToken,
+        'red',
+        clueUUID,
+        currentGuess
+      );
+      if (correct) setIsCorrectGuess(true);
+      else setIsCorrectGuess(false);
+      setGuessesLeft(guessesLeft);
+    } else {
+      const isCorrect = await checkSideQuest(
+        authToken,
+        'red',
+        clueUUID,
+        currentGuess
+      );
+      if (isCorrect) {
+        setIsSideQuestSolved(true);
+        setIsCorrectGuess(true);
+      } else {
+        setIsCorrectGuess(false);
+        setIsSideQuestSolved(false);
+      }
+    }
+
     setIsLoading(false);
   };
+
+  console.log(type, existsSideQuest, isSideQuestSolved);
+  console.log(type, existsSideQuest, isSideQuestSolved);
+  const isButtonDisabled = () =>
+    (type === 'Side Quest' && !existsSideQuest) ||
+    (type === 'Main Quest' && existsSideQuest && !isSideQuestSolved);
   return (
     <div className="grid grid-rows-3 justify-items-center items-center gap-4">
-      <p>{isCorrectGuess ? 'Correct!' : ''}</p>
+      <p className="text-green-700">{isCorrectGuess ? 'Correct!' : ''}</p>
       <button
         className="flex h-10 mt-6 space-x-3 items-center py-2 px-4 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 "
         onClick={makeGuess}
+        disabled={isButtonDisabled()}
       >
         {isLoading ? (
           <svg
@@ -56,7 +92,7 @@ const MakeGuess = ({
         ) : (
           ''
         )}
-        Make a guess
+        Check {type}
       </button>
 
       <input
@@ -66,6 +102,7 @@ const MakeGuess = ({
         onChange={(e) => {
           setCurrentGuess(e.target.value);
         }}
+        disabled={isButtonDisabled()}
       />
     </div>
   );

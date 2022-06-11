@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { Phraze, Puzzle } from './types';
 import { getTimestamp } from './utils';
 
 const API_BASE_URL = 'https://hidden-sierra-71371.herokuapp.com/api/v1';
@@ -18,15 +19,18 @@ const getAuthToken = async (body: body) => {
   return response.data.auth_token;
 };
 
-const getClueUUID = async (id: number, token: string) => {
-  const request = await axios.get(
+const getPuzzle = async (token: string) => {
+  const request = await axios.get<Phraze>(
     `${API_BASE_URL}/puzzles/?t=${getTimestamp()}`,
     {
       headers: { authorization: `Bearer ${token}` },
     }
   );
-  console.log(request);
-  return request.data.puzzles[0].clues[id - 1].uuid;
+  return request.data;
+};
+
+const getClueById = async (puzzle: Phraze, id: number) => {
+  return puzzle.puzzles[0].clues[id - 1];
 };
 
 const checkGuess = async (
@@ -41,7 +45,7 @@ const checkGuess = async (
   bodyFormData.append('slug', board);
   bodyFormData.append('clue', clueUUID);
 
-  const request = await axios.post(
+  const request = await axios.post<Puzzle[]>(
     `${API_BASE_URL}/puzzles/guess?t=${getTimestamp()}`,
     bodyFormData,
     {
@@ -53,10 +57,44 @@ const checkGuess = async (
 
   const guessObject = request.data[0].clues.find(
     ({ uuid }: { uuid: string }) => uuid === clueUUID
-  ).guess;
+  );
 
-  if (guessObject) if (guessObject.correct) return true;
+  return {
+    correct: guessObject?.guess?.correct || false,
+    guessesLeft: guessObject?.guesses_remaining_today || 0,
+  };
+};
+
+const checkSideQuest = async (
+  token: string,
+  board: string,
+  clueUUID: string,
+  guess: string
+) => {
+  const bodyFormData = new FormData();
+  bodyFormData.append('type', 'checkpoint-guess');
+  bodyFormData.append('guess', guess);
+  bodyFormData.append('slug', board);
+  bodyFormData.append('clue', clueUUID);
+
+  const request = await axios.post<Puzzle[]>(
+    `${API_BASE_URL}/puzzles/guess?t=${getTimestamp()}`,
+    bodyFormData,
+    {
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  const guessObject = request.data[0].clues.find(
+    ({ uuid }: { uuid: string }) => uuid === clueUUID
+  );
+
+  if (guessObject)
+    if (guessObject.checkpoint_guess)
+      if (guessObject.checkpoint_guess.checkpoint_correct) return true;
   return false;
 };
 
-export { getAuthToken, getClueUUID, checkGuess };
+export { getAuthToken, getPuzzle, getClueById, checkGuess, checkSideQuest };
