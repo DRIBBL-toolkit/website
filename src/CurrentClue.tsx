@@ -26,10 +26,9 @@ const CurrentClue = ({
       setGuessesLeft(clue.guesses_remaining_today);
       const UUID = clue.uuid;
       console.log(clue.checkpoint);
-      if (clue.checkpoint !== null) setExistsSideQuest(true);
+      if (!!clue.checkpoint) setExistsSideQuest(true);
       setClueUUID(UUID);
     } catch (err) {
-      console.log(err);
       setIsErrored(true);
     }
     setIsLoading(false);

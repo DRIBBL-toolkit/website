@@ -59,8 +59,6 @@ const MakeGuess = ({
     setIsLoading(false);
   };
 
-  console.log(type, existsSideQuest, isSideQuestSolved);
-  console.log(type, existsSideQuest, isSideQuestSolved);
   const isButtonDisabled = () =>
     (type === 'Side Quest' && !existsSideQuest) ||
     (type === 'Main Quest' && existsSideQuest && !isSideQuestSolved);
