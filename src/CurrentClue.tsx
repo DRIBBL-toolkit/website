@@ -25,6 +25,7 @@ const CurrentClue = ({
       const clue = await getClueById(puzzle, currentClue);
       setGuessesLeft(clue.guesses_remaining_today);
       const UUID = clue.uuid;
+      console.log(clue.checkpoint);
       if (clue.checkpoint !== null) setExistsSideQuest(true);
       setClueUUID(UUID);
     } catch (err) {
