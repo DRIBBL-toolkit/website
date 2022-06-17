@@ -9,8 +9,6 @@ function App() {
   const [guessesLeft, setGuessesLeft] = useState(3);
   const [existsSideQuest, setExistsSideQuest] = useState(false);
   const [isSideQuestSolved, setIsSideQuestSolved] = useState(false);
-  console.log(clueUUID);
-  console.log(authToken);
   return (
     <div className="bg-slate-800 grid place-items-center h-screen">
       <CurrentAccount
